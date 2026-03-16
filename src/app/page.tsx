@@ -47,7 +47,7 @@ export default function Home() {
   );
 }
 
-interface HomePageProps { any player; onPlay:()=>void; onSettings:()=>void; }
+interface HomePageProps { player:any; onPlay:()=>void; onSettings:()=>void; }
 
 function HomePage({player,onPlay,onSettings}:HomePageProps) {
   const canvasRef=useRef<HTMLCanvasElement>(null);
