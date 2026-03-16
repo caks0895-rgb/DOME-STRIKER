@@ -171,4 +171,4 @@ function HomePage({player,onPlay,onSettings}:{player:typeof player;onPlay:()=>vo
       `}</style>
     </div>
   );
-}
+            }
