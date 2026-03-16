@@ -7,7 +7,7 @@ export interface GameItem {
   type: ItemType;
   rarity: Rarity;
   description: string;
-  price: number;
+  price?: number; gemPrice?: number;
   gemPrice?: number;
   color: string;
   icon: string;
