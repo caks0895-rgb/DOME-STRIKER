@@ -19,17 +19,23 @@ export default function Home() {
 
   return (
     <div style={{position:"fixed",inset:0,background:"#0d0b1e",fontFamily:"'Nunito',sans-serif",overflow:"hidden"}}>
-      {tab==="home"      && <HomePage player={player} onPlay={()=>setTab("match")} onSettings={()=>setShowSettings(true)}/>}
-      {tab==="missions"  && <MissionsPage onBack={()=>setTab("home")} player={player}/>}
-      {tab==="shop"      && <ShopPage onBack={()=>setTab("home")} player={player}/>}
+      {tab==="home"        && <HomePage player={player} onPlay={()=>setTab("match")} onSettings={()=>setShowSettings(true)}/>}
+      {tab==="missions"    && <MissionsPage onBack={()=>setTab("home")} player={player}/>}
+      {tab==="shop"        && <ShopPage onBack={()=>setTab("home")} player={player}/>}
       {tab==="leaderboard" && <LeaderboardPage onBack={()=>setTab("home")} player={player}/>}
-      {tab==="match"     && <MatchPage onBack={()=>setTab("home")} onStartGame={()=>setTab("playing")} player={player}/>}
-      {tab==="playing"   && <GameCanvas onExit={()=>setTab("home")} player={player}/>}
+      {tab==="match"       && <MatchPage onBack={()=>setTab("home")} onStartGame={()=>setTab("playing")} player={player}/>}
+      {tab==="playing"     && <GameCanvas onExit={()=>setTab("home")} player={player}/>}
 
       {tab!=="playing" && (
         <nav style={{position:"fixed",bottom:0,left:0,right:0,height:64,zIndex:100,background:"rgba(13,11,30,0.95)",borderTop:"1px solid rgba(255,255,255,0.1)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"space-around"}}>
-          {[{id:"missions",icon:"📋",label:"Missions"},{id:"shop",icon:"🎰",label:"Shop"},{id:"home",icon:"🏠",label:"Home"},{id:"leaderboard",icon:"🏆",label:"Rank"},{id:"match",icon:"⚽",label:"Play"}].map(n=>(
-            <button key={n.id} onClick={()=>setTab(n.id as Tab)} style={{background:"none",border:"none",color:tab===n.id?"#ffd700":"rgba(255,255,255,0.45)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,flex:1,padding:"8px 4px",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:10}}>
+          {([
+            {id:"missions",icon:"📋",label:"Missions"},
+            {id:"shop",icon:"🎰",label:"Shop"},
+            {id:"home",icon:"🏠",label:"Home"},
+            {id:"leaderboard",icon:"🏆",label:"Rank"},
+            {id:"match",icon:"⚽",label:"Play"},
+          ] as const).map(n=>(
+            <button key={n.id} onClick={()=>setTab(n.id)} style={{background:"none",border:"none",color:tab===n.id?"#ffd700":"rgba(255,255,255,0.45)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,flex:1,padding:"8px 4px",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:10}}>
               <span style={{fontSize:22}}>{n.icon}</span>{n.label}
             </button>
           ))}
@@ -41,51 +47,64 @@ export default function Home() {
   );
 }
 
-function HomePage({player,onPlay,onSettings}:{player:any;onPlay:()=>void;onSettings:()=>void}) {
+interface HomePageProps { player:typeof player; onPlay:()=>void; onSettings:()=>void; }
+
+function HomePage({player,onPlay,onSettings}:HomePageProps) {
   const canvasRef=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
-    const canvas=canvasRef.current;if(!canvas)return;
+    const canvas=canvasRef.current;
+    if(!canvas)return;
     const ctx=canvas.getContext("2d")!;
-    let raf:number,t=0;
+    let raf:number, t=0;
     function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
-    resize();window.addEventListener("resize",resize);
+    resize();
+    window.addEventListener("resize",resize);
     function draw(){
-      const W=canvas.width,H=canvas.height;t+=0.016;
-      const sky=ctx.createLinearGradient(0,0,0,H*0.65);sky.addColorStop(0,"#08061a");sky.addColorStop(0.5,"#1a0e4a");sky.addColorStop(1,"#2d1a80");
+      const W=canvas.width,H=canvas.height;
+      t+=0.016;
+      const sky=ctx.createLinearGradient(0,0,0,H*0.65);
+      sky.addColorStop(0,"#08061a");sky.addColorStop(0.5,"#1a0e4a");sky.addColorStop(1,"#2d1a80");
       ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-      // stars
-      for(let i=0;i<60;i++){ctx.globalAlpha=(Math.sin(t*2+i)*0.3+0.7)*0.55;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc((i*173+40)%W,(i*97+10)%(H*0.4),0.8,0,Math.PI*2);ctx.fill();}
+      for(let i=0;i<60;i++){
+        ctx.globalAlpha=(Math.sin(t*2+i)*0.3+0.7)*0.55;
+        ctx.fillStyle="#fff";
+        ctx.beginPath();ctx.arc((i*173+40)%W,(i*97+10)%(H*0.4),0.8,0,Math.PI*2);ctx.fill();
+      }
       ctx.globalAlpha=1;
-      // buildings
-      [[0,0.07,0.28,3],[0.07,0.06,0.22,2],[0.12,0.09,0.31,4],[0.7,0.06,0.26,3],[0.75,0.09,0.30,4],[0.87,0.07,0.27,3]].forEach(([rx,rw,rh,wc])=>{
+      ([[0,0.07,0.28],[0.07,0.06,0.22],[0.12,0.09,0.31],[0.7,0.06,0.26],[0.75,0.09,0.30],[0.87,0.07,0.27]] as number[][]).forEach(([rx,rw,rh])=>{
         const bx=rx*W,bw=rw*W,bh=rh*H,by=H*0.55-bh;
         ctx.fillStyle="#12092e";ctx.fillRect(bx,by,bw,bh);
         const cols=Math.max(2,Math.floor(bw/13)),rows=Math.max(2,Math.floor(bh/16));
         for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-          if(Math.sin(t*0.3+r*7+c*13)>0.1){ctx.fillStyle=Math.sin(r+c)>0?"rgba(255,210,80,0.75)":"rgba(200,240,255,0.5)";ctx.fillRect(bx+bw*(c+0.5)/(cols+1)-4,by+r*(bh/rows)+3,8,6);}
+          if(Math.sin(t*0.3+r*7+c*13)>0.1){
+            ctx.fillStyle=Math.sin(r+c)>0?"rgba(255,210,80,0.75)":"rgba(200,240,255,0.5)";
+            ctx.fillRect(bx+bw*(c+0.5)/(cols+1)-4,by+r*(bh/rows)+3,8,6);
+          }
         }
       });
-      // stands
       const gy=H*0.68,gw=W*0.085,standY=H*0.47,standH=H*0.08;
-      [["#1a5276",0.14],["#c9a227",0.08],["#117a65",0.55],["#c0392b",0.08],["#1a5276",0.05]].reduce((acc:[string,number][],item)=>{
-        const [c,w]=item as [string,number];ctx.fillStyle=c;ctx.fillRect(gw+acc.reduce((s,[,v])=>s+v,0)*W,standY,w*W,standH);
-        return [...acc,[c,w]];
-      },[]);
-      // pitch
+      let acc=0;
+      ([["#1a5276",0.14],["#c9a227",0.08],["#117a65",0.55],["#c0392b",0.08],["#1a5276",0.05]] as [string,number][]).forEach(([c,w])=>{
+        ctx.fillStyle=c;ctx.fillRect(gw+acc*W,standY,w*W,standH);acc+=w;
+      });
       ctx.fillStyle="#27ae60";ctx.fillRect(gw,gy-H*0.22,W-gw*2,H*0.22+H*0.32);
       const sw=(W-gw*2)/10;
-      for(let i=0;i<10;i++){ctx.fillStyle=i%2===0?"rgba(0,0,0,0.07)":"rgba(255,255,255,0.04)";ctx.fillRect(gw+i*sw,gy-H*0.22,sw,H*0.22+H*0.32);}
+      for(let i=0;i<10;i++){
+        ctx.fillStyle=i%2===0?"rgba(0,0,0,0.07)":"rgba(255,255,255,0.04)";
+        ctx.fillRect(gw+i*sw,gy-H*0.22,sw,H*0.22+H*0.32);
+      }
       ctx.strokeStyle="rgba(255,255,255,0.6)";ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(W/2,gy-H*0.22);ctx.lineTo(W/2,gy);ctx.stroke();
       ctx.beginPath();ctx.arc(W/2,gy,W*0.07,Math.PI,0);ctx.stroke();
-      // goals
       for(let s=0;s<2;s++){
         const gx=s===0?0:W-gw,px=s===0?gw:W-gw;
         ctx.fillStyle="rgba(180,180,180,0.1)";ctx.fillRect(gx,gy-W*0.09,gw,W*0.09);
         ctx.fillStyle="#ecf0f1";ctx.fillRect(px-3,gy-W*0.09-3,6,W*0.09+3);ctx.fillRect(gx,gy-W*0.09-3,gw,6);
       }
-      const gg=ctx.createLinearGradient(0,gy,0,H);gg.addColorStop(0,"#1e8449");gg.addColorStop(1,"#0f3320");ctx.fillStyle=gg;ctx.fillRect(0,gy,W,H-gy);
+      const gg=ctx.createLinearGradient(0,gy,0,H);
+      gg.addColorStop(0,"#1e8449");gg.addColorStop(1,"#0f3320");
+      ctx.fillStyle=gg;ctx.fillRect(0,gy,W,H-gy);
       raf=requestAnimationFrame(draw);
     }
     draw();
@@ -95,21 +114,20 @@ function HomePage({player,onPlay,onSettings}:{player:any;onPlay:()=>void;onSetti
   return (
     <div style={{position:"fixed",inset:0,display:"flex",flexDirection:"column",paddingBottom:64}}>
       <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
-      {/* Top bar */}
       <div style={{position:"relative",zIndex:10,display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(0,0,0,0.25)",backdropFilter:"blur(8px)"}}>
         <div style={{display:"flex",gap:8}}>
           <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,210,0,0.3)",borderRadius:20,padding:"4px 10px"}}>
-            <span style={{fontSize:16}}>🪙</span><span style={{fontSize:13,fontWeight:800,color:"#ffd700"}}>{player.coins.toLocaleString()}</span>
+            <span style={{fontSize:16}}>🪙</span>
+            <span style={{fontSize:13,fontWeight:800,color:"#ffd700"}}>{player.coins.toLocaleString()}</span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,0.45)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:20,padding:"4px 10px"}}>
-            <span style={{fontSize:16}}>💎</span><span style={{fontSize:13,fontWeight:800,color:"#c084fc"}}>{player.gems}</span>
+            <span style={{fontSize:16}}>💎</span>
+            <span style={{fontSize:13,fontWeight:800,color:"#c084fc"}}>{player.gems}</span>
           </div>
         </div>
         <button onClick={onSettings} style={{background:"rgba(0,0,0,0.4)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:10,padding:"6px 10px",color:"#fff",fontSize:18,cursor:"pointer"}}>⚙️</button>
       </div>
-      {/* Center content */}
       <div style={{position:"relative",zIndex:10,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px",gap:8}}>
-        {/* Mascot SVG */}
         <div style={{animation:"float 3s ease-in-out infinite",marginBottom:4}}>
           <svg width="110" height="130" viewBox="0 0 110 130">
             <ellipse cx="55" cy="125" rx="32" ry="6" fill="rgba(0,0,0,0.3)"/>
@@ -141,7 +159,6 @@ function HomePage({player,onPlay,onSettings}:{player:any;onPlay:()=>void;onSetti
             <circle cx="55" cy="8" r="3" fill="#222"/>
           </svg>
         </div>
-        {/* Title */}
         <div style={{textAlign:"center"}}>
           <div style={{fontFamily:"'Fredoka One',cursive",fontSize:40,lineHeight:1,background:"linear-gradient(135deg,#ffd700,#ff6b35)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}}>
             DOME STRIKER
@@ -150,25 +167,23 @@ function HomePage({player,onPlay,onSettings}:{player:any;onPlay:()=>void;onSetti
             SMASH • SCORE • WIN
           </div>
         </div>
-        {/* Stats */}
         <div style={{display:"flex",gap:10,marginTop:4}}>
-          {[{icon:"⭐",val:`Lv.${player.level}`},{icon:"🏆",val:`${player.wins}W`},{icon:"📊",val:`${player.rating}`}].map(s=>(
+          {([{icon:"⭐",val:`Lv.${player.level}`},{icon:"🏆",val:`${player.wins}W`},{icon:"📊",val:`${player.rating}`}]).map(s=>(
             <div key={s.icon} style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"4px 10px"}}>
-              <span style={{fontSize:13}}>{s.icon}</span><span style={{fontSize:12,fontWeight:800,color:"#fff"}}>{s.val}</span>
+              <span style={{fontSize:13}}>{s.icon}</span>
+              <span style={{fontSize:12,fontWeight:800,color:"#fff"}}>{s.val}</span>
             </div>
           ))}
         </div>
-        {/* Play button */}
         <button onClick={onPlay} style={{marginTop:8,padding:"16px 52px",fontSize:22,fontWeight:900,fontFamily:"'Fredoka One',cursive",background:"linear-gradient(135deg,#22c55e,#16a34a)",color:"#fff",border:"3px solid rgba(255,255,255,0.25)",borderRadius:50,cursor:"pointer",boxShadow:"0 6px 30px rgba(34,197,94,0.5)",animation:"pulse-glow 2s ease-in-out infinite",letterSpacing:2}}>
           ⚽ PLAY NOW
         </button>
         <p style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2}}>Tap to play</p>
       </div>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
         @keyframes pulse-glow{0%,100%{box-shadow:0 6px 20px rgba(34,197,94,0.4)}50%{box-shadow:0 6px 40px rgba(34,197,94,0.8)}}
       `}</style>
     </div>
   );
-            }
+                                             }
