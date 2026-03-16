@@ -28,7 +28,7 @@ export default function Home() {
 
       {tab!=="playing" && (
         <nav style={{position:"fixed",bottom:0,left:0,right:0,height:64,zIndex:100,background:"rgba(13,11,30,0.95)",borderTop:"1px solid rgba(255,255,255,0.1)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"space-around"}}>
-          {[{id:"missions",icon:"📋",label:"Misi"},{id:"shop",icon:"🎰",label:"Shop"},{id:"home",icon:"🏠",label:"Home"},{id:"leaderboard",icon:"🏆",label:"Rank"},{id:"match",icon:"⚽",label:"Main"}].map(n=>(
+          {[{id:"missions",icon:"📋",label:"Missions"},{id:"shop",icon:"🎰",label:"Shop"},{id:"home",icon:"🏠",label:"Home"},{id:"leaderboard",icon:"🏆",label:"Rank"},{id:"match",icon:"⚽",label:"Play"}].map(n=>(
             <button key={n.id} onClick={()=>setTab(n.id as Tab)} style={{background:"none",border:"none",color:tab===n.id?"#ffd700":"rgba(255,255,255,0.45)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,flex:1,padding:"8px 4px",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:10}}>
               <span style={{fontSize:22}}>{n.icon}</span>{n.label}
             </button>
@@ -41,7 +41,7 @@ export default function Home() {
   );
 }
 
-function HomePage({player,onPlay,onSettings}:{player:typeof player;onPlay:()=>void;onSettings:()=>void}) {
+function HomePage({player,onPlay,onSettings}:{player:any;onPlay:()=>void;onSettings:()=>void}) {
   const canvasRef=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
@@ -160,9 +160,9 @@ function HomePage({player,onPlay,onSettings}:{player:typeof player;onPlay:()=>vo
         </div>
         {/* Play button */}
         <button onClick={onPlay} style={{marginTop:8,padding:"16px 52px",fontSize:22,fontWeight:900,fontFamily:"'Fredoka One',cursive",background:"linear-gradient(135deg,#22c55e,#16a34a)",color:"#fff",border:"3px solid rgba(255,255,255,0.25)",borderRadius:50,cursor:"pointer",boxShadow:"0 6px 30px rgba(34,197,94,0.5)",animation:"pulse-glow 2s ease-in-out infinite",letterSpacing:2}}>
-          ⚽ MAIN SEKARANG
+          ⚽ PLAY NOW
         </button>
-        <p style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2}}>Tap untuk bermain</p>
+        <p style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2}}>Tap to play</p>
       </div>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
