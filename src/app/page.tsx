@@ -57,7 +57,7 @@ function HomePage({player,onPlay,onSettings}:HomePageProps) {
     if(!canvas)return;
     const ctx=canvas.getContext("2d")!;
     let raf:number, t=0;
-    function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
+    function resize(){if(!canvas)return;canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
     resize();
     window.addEventListener("resize",resize);
     function draw(){
